@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-dev:
-    runs-on: self-hosted
+    runs-on: [self-hosted,dev]
     if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
     strategy:
       matrix:
@@ -16,17 +16,17 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-         path: |
-          node_modules
-          ~/.npm
-          ${{ github.workspace }}/.next/cache
-  # Generate a new cache whenever packages or source files change.
-         key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-  # If source files changed but packages didn't, rebuild from a prior cache.
-         restore-keys: |
-           ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-
+#       - uses: actions/cache@v2
+#         with:
+#          path: |
+#           node_modules
+#           ~/.npm
+#           ${{ github.workspace }}/.next/cache
+#   # Generate a new cache whenever packages or source files change.
+#          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+#   # If source files changed but packages didn't, rebuild from a prior cache.
+#          restore-keys: |
+#            ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -36,14 +36,17 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install
 
-      - name: Install environment variables
-        run: curl https://d19uv5nwol79dp.cloudfront.net/dev-env/.env --output .env
+#       - name: Install environment variables
+#         run: curl https://d19uv5nwol79dp.cloudfront.net/dev-env/.env --output .env
 
       - name: build package
         run: yarn build
+        
+      - name: run react
+        run: npm start
 
-      - name: delete and Starting server
-        run: sh init.sh
+#       - name: delete and Starting server
+#         run: sh init.sh
 
       - name: Slack Notification
         uses: sonots/slack-notice-action@v3
